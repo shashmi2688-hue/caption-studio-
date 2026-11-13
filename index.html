@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Caption Studio" />
+<meta name="theme-color" content="#0d9488" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d9488'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E" />
+<title>Caption Studio</title>
+<style>
+  :root {
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --teal-dark: #0f766e;
+    --teal-hover: #0b8277;
+    --bg: #f0fafa;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --chip-bg: #e6f7f5;
+    --chip-border: #99e6de;
+    --chip-hover: #b2f0e8;
+    --radius: 12px;
+    --shadow: 0 2px 16px rgba(13,148,136,0.10);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-top: 8px;
+  }
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--teal-dark);
+    letter-spacing: -0.5px;
+  }
+  header h1 span {
+    color: var(--teal);
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  select, textarea, input[type="text"] {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: #f8fafc;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    outline: none;
+    appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  select:focus, textarea:focus, input[type="text"]:focus {
+    border-color: var(--teal);
+    background: #fff;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  .field + .field { margin-top: 14px; }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+  }
+  button:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--teal);
+    color: #fff;
+    padding: 12px 22px;
+    flex: 1;
+    box-shadow: 0 2px 8px rgba(13,148,136,0.25);
+  }
+  .btn-primary:hover { background: var(--teal-hover); }
+  .btn-secondary {
+    background: var(--chip-bg);
+    color: var(--teal-dark);
+    padding: 12px 16px;
+    border: 1.5px solid var(--chip-border);
+  }
+  .btn-secondary:hover { background: var(--chip-hover); }
+  .btn-copy {
+    background: #fff;
+    color: var(--teal-dark);
+    padding: 10px 18px;
+    border: 1.5px solid var(--teal);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+  }
+  .btn-copy:hover { background: var(--teal-light); }
+  .btn-copy.copied {
+    background: var(--teal);
+    color: #fff;
+    border-color: var(--teal);
+  }
+  /* Output area */
+  #output-section { display: none; }
+  .output-label {
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #caption-box {
+    background: #f8fafc;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    color: var(--text);
+    min-height: 80px;
+    margin-bottom: 14px;
+    word-break: break-word;
+  }
+  /* Hashtag chips */
+  .hashtag-label {
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    background: var(--chip-bg);
+    border: 1.5px solid var(--chip-border);
+    color: var(--teal-dark);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .chip:hover { background: var(--chip-hover); border-color: var(--teal); }
+  .chip.selected {
+    background: var(--teal);
+    color: #fff;
+    border-color: var(--teal-dark);
+  }
+  .action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--teal-dark);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  /* Page badge */
+  .page-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--teal-light);
+    border: 1.5px solid var(--chip-border);
+    color: var(--teal-dark);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .page-badge::before {
+    content: '';
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--teal);
+    border-radius: 50%;
+  }
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.4rem; }
+    .btn-primary { font-size: 0.85rem; padding: 11px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Caption <span>Studio</span></h1>
+  <p>AI-powered captions for Facebook pages</p>
+</header>
+
+<!-- Input Card -->
+<div class="card">
+  <div class="field">
+    <label for="page-select">📄 Facebook Page</label>
+    <select id="page-select">
+      <option value="">— Select a page —</option>
+      <option value="Ai Videos">Ai Videos</option>
+      <option value="AI Toons">AI Toons</option>
+      <option value="Cricvid">Cricvid</option>
+      <option value="Hashmi News">Hashmi News</option>
+      <option value="Nest and Nook">Nest and Nook</option>
+      <option value="Hair Nails Skin Care by Dr">Hair Nails Skin Care by Dr</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="topic-input">✏️ Video / Post Topic</label>
+    <textarea id="topic-input" placeholder="e.g. Pakistan vs India match highlights…"></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="generateCaption()">✨ Generate Caption</button>
+    <button class="btn-secondary" onclick="shuffleHook()" id="shuffle-btn" style="display:none;">🔀 Shuffle Hook</button>
+  </div>
+</div>
+
+<!-- Output Card -->
+<div class="card" id="output-section">
+  <div class="page-badge" id="page-badge-text"></div>
+
+  <div class="output-label">
+    <span>📝 Caption</span>
+  </div>
+  <div id="caption-box"></div>
+
+  <div class="hashtag-label">🏷️ Hashtags <span style="font-weight:400;font-size:0.75rem;color:#94a3b8;">(tap to toggle)</span></div>
+  <div class="chips" id="chips-container"></div>
+
+  <div class="action-row">
+    <button class="btn-copy" id="copy-btn" onclick="copyAll()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy Caption + Hashtags
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Copied to clipboard!</div>
+
+<script>
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+const PAGES = {
+  "Ai Videos": {
+    hashtags: ["#Action","#Cinema","#ViralReels","#Trending","#MustWatch","#Reels","#HollywoodStyle","#Epic","#FightScene","#MovieMagic"],
+    style: "ai-videos"
+  },
+  "AI Toons": {
+    hashtags: ["#Cartoons","#KidsVideos","#Animation","#Cute","#FunnyToons","#CartoonLovers","#FamilyFun","#KidsEntertainment"],
+    style: "ai-toons"
+  },
+  "Cricvid": {
+    hashtags: ["#Cricket","#PakistanCricket","#CricketLovers","#CricketFans","#CricketNews","#PAKvIND","#U19AsiaCup"],
+    style: "cricvid"
+  },
+  "Hashmi News": {
+    hashtags: ["#Pakistan","#News","#BreakingNews","#UrduNews","#PakistanNews"],
+    style: "news"
+  },
+  "Nest and Nook": {
+    hashtags: ["#HomeDecor","#CozyHome","#HomeDecorIdeas","#InteriorDesign","#BudgetDecor","#HomeInspo","#DecorLovers","#AmazonFinds"],
+    style: "nest"
+  },
+  "Hair Nails Skin Care by Dr": {
+    hashtags: ["#HairCare","#HealthyHair","#HairTips","#HairCareRoutine","#BeautyTips","#hairtok","#HairGrowth","#HairRoutine","#HairCareHacks","#HairGoals","#HairTransformation","#HairTrends"],
+    style: "beauty"
+  }
+};
+
+// ─── Hooks: Part 1 (curiosity) + Part 4 (social growth) ─────────────────────
+// English-adapted versions suitable for the respective pages
+const CURIOSITY_HOOKS = [
+  "Did you know you could do this for free?",
+  "99% of people make this mistake — are you one of them?",
+  "I wish I had known this sooner!",
+  "This one small tip could save you a lot of time.",
+  "If you do this too, you need to read this post.",
+  "Most people don't know about this hidden gem.",
+  "Have you ever wondered this could be so easy?",
+  "Before you scroll away, know this one thing.",
+  "This might just change the way you see things.",
+  "Today I'm sharing something that could be really useful for you."
+];
+
+const GROWTH_HOOKS = [
+  "Why do so few people engage with your posts? Here's why.",
+  "5 things to do right now to improve your page.",
+  "Just posting is not enough — here's what you're missing!",
+  "Why does the first line of your post matter so much?",
+  "Before you hit publish, check this list.",
+  "Follow these 5 rules to make your posts more effective.",
+  "One simple tip to level up your content today!",
+  "Before chasing followers, focus on this.",
+  "Are you actually checking how your page is performing?",
+  "Create posts that truly add value for your audience."
+];
+
+// All hooks combined for cycling/shuffling
+const ALL_HOOKS = [...CURIOSITY_HOOKS, ...GROWTH_HOOKS];
+
+// Urdu/Roman-Urdu curiosity hooks for Ai Videos / AI Toons
+const URDU_CURIOSITY_HOOKS = [
+  "کیا آپ جانتے ہیں کہ آپ یہ کام بالکل مفت بھی کر سکتے ہیں؟",
+  "99% لوگ یہ غلطی کرتے ہیں، کہیں آپ بھی تو نہیں؟",
+  "کاش مجھے یہ بات پہلے معلوم ہوتی!",
+  "یہ ایک چھوٹی سی ٹِپ آپ کا بہت سا وقت بچا سکتی ہے۔",
+  "کیا آپ نے کبھی سوچا ہے کہ یہ کام اتنی آسانی سے بھی ہو سکتا ہے؟",
+  "آگے بڑھنے سے پہلے یہ ایک بات ضرور جان لیں۔",
+  "یہ معلومات شاید آپ کے کام کرنے کا انداز بدل دیں۔",
+  "آج آپ کو ایک ایسی چیز بتانے والا ہوں جو آپ کے لیے مفید ثابت ہو سکتی ہے۔"
+];
+
+const URDU_GROWTH_HOOKS = [
+  "آپ کی پوسٹس پر کم لوگ کیوں ردِعمل دیتے ہیں؟ یہ وجوہات جانیں۔",
+  "فیس بک پیج کو بہتر بنانے کے لیے یہ 5 کام کریں۔",
+  "صرف پوسٹ کرنا کافی نہیں، یہ بات بھی سمجھیں!",
+  "آپ کی پوسٹ کی پہلی لائن اتنی اہم کیوں ہے؟",
+  "زیادہ مؤثر پوسٹس بنانے کے لیے ان 5 اصولوں پر عمل کریں۔",
+  "آپ کے کانٹینٹ کو بہتر بنانے کے لیے ایک آسان مشورہ!"
+];
+
+const ALL_URDU_HOOKS = [...URDU_CURIOSITY_HOOKS, ...URDU_GROWTH_HOOKS];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let currentHookIndex = 0;
+let currentPage = "";
+let currentTopic = "";
+let selectedChips = new Set();
+let currentHookPool = [];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function pickRandomIndex(arr) {
+  return Math.floor(Math.random() * arr.length);
+}
+
+function getHookPool(page) {
+  if (page === "Ai Videos" || page === "AI Toons") return ALL_URDU_HOOKS;
+  return ALL_HOOKS;
+}
+
+function pickHook(pool, exclude) {
+  if (pool.length === 1) return 0;
+  let idx;
+  do { idx = pickRandomIndex(pool); } while (idx === exclude);
+  return idx;
+}
+
+// ─── Caption generation ───────────────────────────────────────────────────────
+function buildCaption(page, topic, hookLine) {
+  const style = PAGES[page].style;
+  let caption = "";
+
+  if (style === "ai-videos") {
+    caption =
+      hookLine + "\n\n" +
+      `🎬 ${topic}\n` +
+      `AI نے اس ویڈیو کو بالکل نئے انداز میں پیش کیا ہے۔\n` +
+      `ہر فریم میں جادو ہے — دیکھتے رہیں!\n\n` +
+      `آپ کو یہ ویڈیو کیسی لگی؟ کمنٹ میں بتائیں! 👇`;
+  } else if (style === "ai-toons") {
+    caption =
+      hookLine + "\n\n" +
+      `🎨 ${topic}\n` +
+      `AI کارٹونز بچوں کو بھی پسند آئیں گے اور بڑوں کو بھی!\n` +
+      `مزے اور ہنسی سے بھری اس ویڈیو کو اپنے بچوں کے ساتھ دیکھیں۔\n\n` +
+      `آپ کا پسندیدہ کارٹون کردار کون سا ہے؟ نیچے بتائیں! 👇`;
+  } else if (style === "cricvid") {
+    caption =
+      hookLine + "\n\n" +
+      `🏏 ${topic}\n` +
+      `This is the kind of cricket moment that gets your heart racing.\n` +
+      `Relive every bit of the action — don't miss a single delivery!\n\n` +
+      `Which player impressed you the most? Drop your thoughts below! 👇`;
+  } else if (style === "news") {
+    // Plain news style — no hook, no engagement question
+    caption =
+      `📰 ${topic}\n\n` +
+      `تازہ ترین خبروں کے لیے ہمارے پیج کو فالو کریں۔\n` +
+      `ہاشمی نیوز — سچ، سادہ، سریع۔`;
+  } else if (style === "nest") {
+    caption =
+      hookLine + "\n\n" +
+      `🏡 ${topic}\n` +
+      `Small changes can make a big difference in your home.\n` +
+      `Budget-friendly, stylish, and totally worth it!\n\n` +
+      `Which decor idea would you try first? Let us know! 👇\n\n` +
+      `As an Amazon Associate I earn from qualifying purchases.`;
+  } else if (style === "beauty") {
+    caption =
+      hookLine + "\n\n" +
+      `💆 ${topic}\n` +
+      `A healthy hair & skin routine doesn't have to be complicated.\n` +
+      `Follow these expert tips for real, visible results!\n\n` +
+      `What's your biggest hair or skin concern right now? Comment below! 👇`;
+  }
+
+  return caption;
+}
+
+// ─── Main generate ────────────────────────────────────────────────────────────
+function generateCaption() {
+  const pageEl = document.getElementById("page-select");
+  const topicEl = document.getElementById("topic-input");
+
+  currentPage = pageEl.value.trim();
+  currentTopic = topicEl.value.trim();
+
+  if (!currentPage) { showToastMsg("⚠️ Please select a Facebook page."); return; }
+  if (!currentTopic) { showToastMsg("⚠️ Please enter a topic."); return; }
+
+  currentHookPool = getHookPool(currentPage);
+  currentHookIndex = pickRandomIndex(currentHookPool);
+
+  renderOutput();
+  document.getElementById("output-section").style.display = "block";
+  document.getElementById("shuffle-btn").style.display = "";
+  document.getElementById("output-section").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function shuffleHook() {
+  currentHookIndex = pickHook(currentHookPool, currentHookIndex);
+  renderOutput();
+}
+
+function renderOutput() {
+  const hook = currentHookPool[currentHookIndex];
+  const isNews = PAGES[currentPage].style === "news";
+  const hookLine = isNews ? "" : hook;
+  const caption = buildCaption(currentPage, currentTopic, hookLine);
+
+  document.getElementById("caption-box").textContent = caption;
+  document.getElementById("page-badge-text").textContent = currentPage;
+
+  // Render chips
+  const container = document.getElementById("chips-container");
+  container.innerHTML = "";
+  selectedChips = new Set(PAGES[currentPage].hashtags); // all selected by default
+
+  PAGES[currentPage].hashtags.forEach(tag => {
+    const chip = document.createElement("span");
+    chip.className = "chip selected";
+    chip.textContent = tag;
+    chip.dataset.tag = tag;
+    chip.addEventListener("click", () => {
+      if (selectedChips.has(tag)) {
+        selectedChips.delete(tag);
+        chip.classList.remove("selected");
+      } else {
+        selectedChips.add(tag);
+        chip.classList.add("selected");
+      }
+    });
+    container.appendChild(chip);
+  });
+}
+
+// ─── Copy ─────────────────────────────────────────────────────────────────────
+async function copyAll() {
+  const caption = document.getElementById("caption-box").textContent;
+  const hashtags = Array.from(selectedChips).join(" ");
+  const full = hashtags ? caption + "\n\n" + hashtags : caption;
+
+  try {
+    await navigator.clipboard.writeText(full);
+    const btn = document.getElementById("copy-btn");
+    btn.classList.add("copied");
+    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    showToastMsg("✅ Copied to clipboard!");
+    setTimeout(() => {
+      btn.classList.remove("copied");
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Caption + Hashtags`;
+    }, 2200);
+  } catch {
+    showToastMsg("⚠️ Copy failed — please copy manually.");
+  }
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToastMsg(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+</script>
+</body>
+</html>
